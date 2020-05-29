@@ -1,5 +1,5 @@
 mod capture;
 mod video;
 
-pub use capture::{CamConfig, VideoCapture};
-pub use video::VideoConfig;
+pub use self::capture::{CamConfig, VideoCapture};
+pub use self::video::VideoConfig;

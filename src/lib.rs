@@ -4,8 +4,8 @@ mod config;
 mod frame;
 mod wrapper;
 
-pub use common::{ArcVideoReader, EyeDriver};
-pub use config::{VideoColor, VideoMeta};
-pub use frame::Frame;
+pub use self::common::{ArcVideoReader, EyeDriver};
+pub use self::config::{VideoColor, VideoMeta};
+pub use self::frame::Frame;
 
-pub use wrapper::make_driver;
+pub use self::wrapper::make_driver;
