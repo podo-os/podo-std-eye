@@ -18,6 +18,7 @@ pub struct Config(pub(crate) HashMap<String, OneConfig>);
 pub enum OneConfig {
     Cam(CamConfig),
     Video(VideoConfig),
+    Rtsp(VideoConfig),
 }
 
 impl OneConfig {
@@ -27,6 +28,9 @@ impl OneConfig {
                 Box::new(VideoCapture::from_config(config, path)?)
             }
             crate::config::OneConfig::Video(config) => {
+                Box::new(VideoCapture::from_config(config, path)?)
+            }
+            crate::config::OneConfig::Rtsp(config) => {
                 Box::new(VideoCapture::from_config(config, path)?)
             }
         };
