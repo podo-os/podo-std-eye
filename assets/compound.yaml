@@ -1,0 +1,18 @@
+main:
+    Cam:
+        device: 0
+
+        codec: MJPG
+        width: 640
+        height: 480
+        fps: 30
+
+video:
+    Video:
+        # Downloaded from https://github.com/opencv/opencv/raw/master/samples/data/Megamind.avi
+        path: videos/Megamind.avi
+
+        codec: MJPG
+        width: 640
+        height: 480
+        fps: 30
