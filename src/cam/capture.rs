@@ -274,6 +274,11 @@ where
         }
     }
 
+    #[inline]
+    fn is_running(&self) -> bool {
+        self.running.is_running()
+    }
+
     fn get(&self, frame: &mut Option<Frame>) -> Result<(), RuntimeError> {
         let frame = match frame.as_mut() {
             Some(frame) => frame,

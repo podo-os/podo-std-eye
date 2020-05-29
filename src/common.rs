@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
+use crate::config::Config;
 use crate::frame::Frame;
 
 use podo_core_driver::*;
@@ -13,6 +14,8 @@ pub type ArcVideoReader = Arc<dyn VideoReader>;
 pub trait VideoReader: Send + Sync {
     fn start(&self) -> Result<(), RuntimeError>;
     fn stop(&self) -> Result<(), RuntimeError>;
+
+    fn is_running(&self) -> bool;
 
     fn get(&self, old: &mut Option<Frame>) -> Result<(), RuntimeError>;
 }
@@ -58,22 +61,26 @@ impl EyeDriver {
 
 impl Driver for EyeDriver {
     fn status(&self) -> Result<DriverState, RuntimeError> {
-        Ok(DriverState::Running(DriverRunningState::default()))
+        if self.inner.values().any(|r| r.is_running()) {
+            Ok(DriverState::Running(DriverRunningState::default()))
+        } else {
+            Ok(DriverState::Idle)
+        }
     }
 }
 
 impl EyeDriver {
-    pub fn try_with_settings<P: AsRef<Path>>(path: P) -> Result<Self, RuntimeError> {
+    pub fn try_with_config<P: AsRef<Path>>(path: P) -> Result<Self, RuntimeError> {
         let params = serde_yaml::from_str(&fs::read_to_string(&path)?)?;
         let path = path.as_ref().parent().unwrap().to_path_buf();
-        Self::try_with_settings_params(&path, &params)
+        Self::try_with_config_params(path, &params)
     }
 
-    pub(crate) fn try_with_settings_params<P: AsRef<Path>>(
+    pub(crate) fn try_with_config_params<P: AsRef<Path>>(
         path: P,
         params: &DriverParams,
     ) -> Result<Self, RuntimeError> {
-        let driver = serde_yaml::from_value::<crate::config::Config>(params.clone())?
+        let driver = serde_yaml::from_value::<Config>(params.clone())?
             .0
             .into_iter()
             .map(|(name, config)| Ok((name, config.spawn(&path)?)))

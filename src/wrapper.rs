@@ -10,6 +10,6 @@ pub extern "C" fn make_driver(
     path: &PathBuf,
     params: &DriverParams,
 ) -> Result<ArcDriver, RuntimeError> {
-    let driver = EyeDriver::try_with_settings_params(path, params)?;
+    let driver = EyeDriver::try_with_config_params(path, params)?;
     Ok(Arc::new(driver))
 }

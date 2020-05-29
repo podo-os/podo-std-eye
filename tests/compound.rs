@@ -5,7 +5,7 @@ use podo_std_eye::*;
 
 #[test]
 fn test_get_30_images_with_10_threads() -> Result<(), RuntimeError> {
-    let driver = EyeDriver::try_with_settings("assets/compound.yaml")?;
+    let driver = EyeDriver::try_with_config("assets/compound.yaml")?;
 
     for name in driver.names() {
         let reader = driver.get(name).unwrap();
