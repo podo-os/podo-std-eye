@@ -5,6 +5,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::config::Config;
+use crate::export::EyeExportServerHandler;
 use crate::frame::Frame;
 
 use podo_core_driver::*;
@@ -17,16 +18,21 @@ pub trait VideoReader: Send + Sync {
 
     fn is_running(&self) -> bool;
 
+    fn is_export(&self) -> bool;
+
     fn get(&self, old: &mut Option<Frame>) -> Result<(), RuntimeError>;
 }
 
 pub struct EyeDriver {
     inner: BTreeMap<String, ArcVideoReader>,
+    export: EyeExportServerHandler,
 }
 
 impl From<BTreeMap<String, ArcVideoReader>> for EyeDriver {
     fn from(inner: BTreeMap<String, ArcVideoReader>) -> Self {
-        Self { inner }
+        let export = EyeExportServerHandler::new(&inner);
+        export.start().unwrap();
+        Self { inner, export }
     }
 }
 
@@ -61,11 +67,23 @@ impl EyeDriver {
 
 impl Driver for EyeDriver {
     fn status(&self) -> Result<DriverState, RuntimeError> {
-        if self.inner.values().any(|r| r.is_running()) {
-            Ok(DriverState::Running(DriverRunningState::default()))
+        if self.export.is_busy() {
+            Ok(DriverState::Running(DriverRunningState::Busy))
+        } else if self.inner.values().any(|r| r.is_running()) {
+            Ok(DriverState::Running(DriverRunningState::Normal))
+        } else if self.export.is_running() {
+            Ok(DriverState::Running(DriverRunningState::Lazy))
         } else {
             Ok(DriverState::Idle)
         }
+    }
+
+    fn hibernate(&self) -> Result<(), RuntimeError> {
+        self.export.stop()
+    }
+
+    fn wake_up(&self) -> Result<(), RuntimeError> {
+        self.export.start()
     }
 }
 
@@ -83,7 +101,10 @@ impl EyeDriver {
         let driver = serde_yaml::from_value::<Config>(params.clone())?
             .0
             .into_iter()
-            .map(|(name, config)| Ok((name, config.spawn(&path)?)))
+            .map(|(name, config)| {
+                let reader = config.spawn(&name, &path)?;
+                Ok((name, reader))
+            })
             .collect::<Result<BTreeMap<_, _>, RuntimeError>>()?;
         Ok(EyeDriver::from(driver))
     }

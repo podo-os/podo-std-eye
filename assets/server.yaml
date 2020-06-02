@@ -1,0 +1,10 @@
+main:
+    Cam:
+        device: 0
+
+        export: true
+
+        codec: MJPG
+        width: 640
+        height: 480
+        fps: 30

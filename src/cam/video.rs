@@ -25,4 +25,9 @@ impl Configurable for VideoConfig {
     fn meta(&self) -> &VideoMeta {
         &self.meta
     }
+
+    #[inline]
+    fn is_export(&self) -> bool {
+        false
+    }
 }

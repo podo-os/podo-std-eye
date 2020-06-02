@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use crate::cam::{CamConfig, VideoCapture, VideoConfig};
+use crate::cam::*;
 use crate::common::{ArcVideoReader, VideoReader};
 
 use opencv::imgproc::*;
@@ -9,7 +9,7 @@ use opencv::prelude::*;
 use opencv::videoio;
 use opencv::videoio::VideoCaptureTrait;
 use podo_core_driver::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
 pub struct Config(pub(crate) HashMap<String, OneConfig>);
@@ -18,11 +18,16 @@ pub struct Config(pub(crate) HashMap<String, OneConfig>);
 pub enum OneConfig {
     Cam(CamConfig),
     Video(VideoConfig),
-    Rtsp(VideoConfig),
+    Rtsp(RtspConfig),
+    Client(ClientConfig),
 }
 
 impl OneConfig {
-    pub(crate) fn spawn<P: AsRef<Path>>(self, path: P) -> Result<ArcVideoReader, RuntimeError> {
+    pub(crate) fn spawn<P: AsRef<Path>>(
+        self,
+        name: &str,
+        path: P,
+    ) -> Result<ArcVideoReader, RuntimeError> {
         let reader: Box<dyn VideoReader> = match self {
             crate::config::OneConfig::Cam(config) => {
                 Box::new(VideoCapture::from_config(config, path)?)
@@ -33,6 +38,9 @@ impl OneConfig {
             crate::config::OneConfig::Rtsp(config) => {
                 Box::new(VideoCapture::from_config(config, path)?)
             }
+            crate::config::OneConfig::Client(config) => {
+                Box::new(ClientCapture::from_config(config, name)?)
+            }
         };
         Ok(reader.into())
     }
@@ -41,6 +49,8 @@ impl OneConfig {
 pub trait Configurable: Send + Sync {
     fn filename(&self, path: &PathBuf) -> Result<String, RuntimeError>;
     fn meta(&self) -> &VideoMeta;
+
+    fn is_export(&self) -> bool;
 
     #[inline]
     fn spawn(&self, path: &PathBuf) -> Result<(videoio::VideoCapture, VideoColor), RuntimeError> {
@@ -72,7 +82,7 @@ pub trait Configurable: Send + Sync {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VideoMeta {
     pub(crate) codec: Option<String>,
 
@@ -83,7 +93,7 @@ pub struct VideoMeta {
     pub fps: u32,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum VideoColor {
     Grayscale,
     Color, // BGR
