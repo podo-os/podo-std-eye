@@ -4,6 +4,12 @@ version = "0.1.1"
 authors = ["h <besqer996@gnu.ac.kr>"]
 edition = "2018"
 
+description = "A podo driver with video & camera abstraction"
+homepage = "https://github.com/podo-os"
+repository = "https://github.com/podo-os/podo-std-eye"
+readme = "README.md"
+license = "BSD-3-Clause"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -12,7 +18,7 @@ opencv = { version = "0.38", features = ["contrib"] }
 podo-core-driver = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
-simple-socket = { path = "../socket" }
+simple-socket = "0.1"
 
 [dev-dependencies]
 bincode = "1.2"
