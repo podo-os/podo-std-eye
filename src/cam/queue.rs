@@ -65,6 +65,7 @@ impl Queue {
         Ok(())
     }
 
+    #[cfg(feature = "simple-socket")]
     #[inline]
     pub fn push_inner_inplace(
         &self,

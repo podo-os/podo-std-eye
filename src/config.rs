@@ -19,13 +19,14 @@ pub enum OneConfig {
     Cam(CamConfig),
     Video(VideoConfig),
     Rtsp(RtspConfig),
+    #[cfg(feature = "simple-socket")]
     Client(ClientConfig),
 }
 
 impl OneConfig {
     pub(crate) fn spawn<P: AsRef<Path>>(
         self,
-        name: &str,
+        _name: &str,
         path: P,
     ) -> Result<ArcVideoReader, RuntimeError> {
         let reader: Box<dyn VideoReader> = match self {
@@ -38,8 +39,9 @@ impl OneConfig {
             crate::config::OneConfig::Rtsp(config) => {
                 Box::new(VideoCapture::from_config(config, path)?)
             }
+            #[cfg(feature = "simple-socket")]
             crate::config::OneConfig::Client(config) => {
-                Box::new(ClientCapture::from_config(config, name)?)
+                Box::new(ClientCapture::from_config(config, _name)?)
             }
         };
         Ok(reader.into())

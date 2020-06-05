@@ -1,6 +1,7 @@
 mod cam;
 mod common;
 mod config;
+#[cfg(feature = "simple-socket")]
 mod export;
 mod frame;
 mod wrapper;

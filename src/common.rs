@@ -5,6 +5,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::config::Config;
+#[cfg(feature = "simple-socket")]
 use crate::export::EyeExportServerHandler;
 use crate::frame::Frame;
 
@@ -25,14 +26,23 @@ pub trait VideoReader: Send + Sync {
 
 pub struct EyeDriver {
     inner: BTreeMap<String, ArcVideoReader>,
+    #[cfg(feature = "simple-socket")]
     export: EyeExportServerHandler,
 }
 
+#[cfg(feature = "simple-socket")]
 impl From<BTreeMap<String, ArcVideoReader>> for EyeDriver {
     fn from(inner: BTreeMap<String, ArcVideoReader>) -> Self {
         let export = EyeExportServerHandler::new(&inner);
         export.start().unwrap();
         Self { inner, export }
+    }
+}
+
+#[cfg(not(feature = "simple-socket"))]
+impl From<BTreeMap<String, ArcVideoReader>> for EyeDriver {
+    fn from(inner: BTreeMap<String, ArcVideoReader>) -> Self {
+        Self { inner }
     }
 }
 
@@ -66,6 +76,16 @@ impl EyeDriver {
 }
 
 impl Driver for EyeDriver {
+    #[cfg(not(feature = "simple-socket"))]
+    fn status(&self) -> Result<DriverState, RuntimeError> {
+        if self.inner.values().any(|r| r.is_running()) {
+            Ok(DriverState::Running(DriverRunningState::Normal))
+        } else {
+            Ok(DriverState::Idle)
+        }
+    }
+
+    #[cfg(feature = "simple-socket")]
     fn status(&self) -> Result<DriverState, RuntimeError> {
         if self.export.is_busy() {
             Ok(DriverState::Running(DriverRunningState::Busy))
@@ -78,10 +98,12 @@ impl Driver for EyeDriver {
         }
     }
 
+    #[cfg(feature = "simple-socket")]
     fn hibernate(&self) -> Result<(), RuntimeError> {
         self.export.stop()
     }
 
+    #[cfg(feature = "simple-socket")]
     fn wake_up(&self) -> Result<(), RuntimeError> {
         self.export.start()
     }

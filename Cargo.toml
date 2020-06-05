@@ -1,6 +1,6 @@
 [package]
 name = "podo-std-eye"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["h <besqer996@gnu.ac.kr>"]
 edition = "2018"
 
@@ -12,13 +12,16 @@ license = "BSD-3-Clause"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 opencv = { version = "0.38", features = ["contrib"] }
 podo-core-driver = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
-simple-socket = "0.1"
+simple-socket = { version = "0.1", optional = true }
 
 [dev-dependencies]
 bincode = "1.2"
