@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
-use crate::common::EyeDriver;
-
 use podo_core_driver::*;
+use podo_std_eye::EyeDriver;
 
 #[no_mangle]
 pub extern "C" fn make_driver(

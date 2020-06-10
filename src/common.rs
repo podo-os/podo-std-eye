@@ -116,7 +116,7 @@ impl EyeDriver {
         Self::try_with_config_params(path, &params)
     }
 
-    pub(crate) fn try_with_config_params<P: AsRef<Path>>(
+    pub fn try_with_config_params<P: AsRef<Path>>(
         path: P,
         params: &DriverParams,
     ) -> Result<Self, RuntimeError> {
