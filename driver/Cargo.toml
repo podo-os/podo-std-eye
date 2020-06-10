@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 podo-core-driver = "0.4"
-podo-std-eye = { path = ".." }
+podo-std-eye = "0.1"
 
 [lib]
 crate-type = ["cdylib"]
